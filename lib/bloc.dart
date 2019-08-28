@@ -5,10 +5,16 @@ import 'package:pagination/model.dart';
 import 'package:pagination/network.dart';
 
 import 'package:rxdart/rxdart.dart';
+import 'dart:async';
+import 'package:flutter/widgets.dart';
+
+import 'package:pagination/model.dart';
+import 'package:pagination/network.dart';
+
+import 'package:rxdart/rxdart.dart';
 
 class PhotoBloc {
   final API api = API();
-
   int pageNumber = 1;
   double pixels = 0.0;
 
@@ -22,9 +28,7 @@ class PhotoBloc {
   PhotoBloc() {
     _subject.addStream(Observable.fromFuture(api.getPhotos(pageNumber)));
 
-    _controller.stream.listen((notification) {
-      loadPhotos(notification);
-    });
+    _controller.listen((notification) => loadPhotos(notification));
   }
 
   Future<void> loadPhotos([
@@ -33,10 +37,10 @@ class PhotoBloc {
     if (notification.metrics.pixels == notification.metrics.maxScrollExtent &&
         pixels != notification.metrics.pixels) {
       pixels = notification.metrics.pixels;
+
       pageNumber++;
       List<Photo> list = await api.getPhotos(pageNumber);
       _subject.sink.add(list);
-      await Future.delayed(Duration(milliseconds: 300));
     }
   }
 

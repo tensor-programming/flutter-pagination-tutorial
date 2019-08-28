@@ -30,31 +30,61 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Photo> photos;
-  var cache = List<int>();
+  List<int> maxPhotos = [];
 
   @override
   void initState() {
     super.initState();
 
-    cache.addAll(List.generate(5000, (x) => x));
+    maxPhotos.addAll(List.generate(5000, (x) => x));
     photos = [];
   }
 
   bool onNotification(ScrollNotification scrollInfo, PhotoBloc bloc) {
-    print(scrollInfo);
+    // print(scrollInfo);
     if (scrollInfo is OverscrollNotification) {
       bloc.sink.add(scrollInfo);
     }
     return false;
   }
 
+  Widget buildListView(
+    BuildContext context,
+    AsyncSnapshot<List<Photo>> snapshot,
+  ) {
+    if (!snapshot.hasData) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    photos.addAll(snapshot.data);
+
+    return ListView.builder(
+      itemCount: (maxPhotos.length > photos.length)
+          ? photos.length + 1
+          : photos.length,
+      itemBuilder: (context, index) => (index == photos.length)
+          ? Container(
+              margin: EdgeInsets.all(8),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : ListTile(
+              leading: CircleAvatar(
+                child: Image.network(photos[index].thumbnailUrl),
+              ),
+              title: Text(photos[index].id.toString()),
+              subtitle: Text(photos[index].title),
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final PhotoBloc bloc = Provider.of<PhotoBloc>(context);
-
+    final bloc = Provider.of<PhotoBloc>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pagination Example"),
+        title: Text("Pagination App"),
       ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (notification) => onNotification(notification, bloc),
@@ -66,30 +96,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
-  }
-
-  buildListView(BuildContext context, AsyncSnapshot<List<Photo>> snapshot) {
-    if (snapshot.hasData) {
-      photos.addAll(snapshot.data);
-
-      return ListView.builder(
-          itemCount: (cache.length > photos.length)
-              ? photos.length + 1
-              : photos.length,
-          itemBuilder: (context, index) {
-            return (index == photos.length)
-                ? Container(
-                    margin: EdgeInsets.all(8),
-                    child: Center(child: CircularProgressIndicator()))
-                : ListTile(
-                    leading: CircleAvatar(
-                      child: Image.network(photos[index].thumbnailUrl),
-                    ),
-                    title: Text(photos[index].id.toString()),
-                    subtitle: Text(photos[index].title));
-          });
-    }
-
-    return Center(child: CircularProgressIndicator());
   }
 }
