@@ -5,13 +5,6 @@ import 'package:pagination/model.dart';
 import 'package:pagination/network.dart';
 
 import 'package:rxdart/rxdart.dart';
-import 'dart:async';
-import 'package:flutter/widgets.dart';
-
-import 'package:pagination/model.dart';
-import 'package:pagination/network.dart';
-
-import 'package:rxdart/rxdart.dart';
 
 class PhotoBloc {
   final API api = API();
